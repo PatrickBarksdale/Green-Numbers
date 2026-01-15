@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Call Calculator - Green Numbers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 600;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .result-amount {
+            color: #333;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .result-details {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .help-text {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .result-amount {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Capital Call Calculator</h1>
+            <p>Calculate LP contributions based on ownership percentage</p>
+        </div>
+
+        <form id="calculatorForm">
+            <div class="form-group">
+                <label for="totalCapitalCall">Total Capital Call Amount</label>
+                <div class="input-wrapper">
+                    <span class="input-prefix">$</span>
+                    <input
+                        type="number"
+                        id="totalCapitalCall"
+                        placeholder="1000000"
+                        required
+                        step="0.01"
+                        min="0"
+                    >
+                </div>
+                <p class="help-text">Enter the total amount being called from all LPs</p>
+            </div>
+
+            <div class="form-group">
+                <label for="ownershipPercentage">LP Ownership Percentage</label>
+                <div class="input-wrapper">
+                    <input
+                        type="number"
+                        id="ownershipPercentage"
+                        placeholder="25"
+                        required
+                        step="0.01"
+                        min="0"
+                        max="100"
+                    >
+                    <span class="input-suffix">%</span>
+                </div>
+                <p class="help-text">Enter the LP's ownership percentage in the fund</p>
+            </div>
+
+            <button type="submit" class="btn-calculate">Calculate Capital Call</button>
+        </form>
+
+        <div id="result" class="result">
+            <div class="result-label">LP Capital Call Amount:</div>
+            <div class="result-amount" id="resultAmount">$0.00</div>
+            <div class="result-details" id="resultDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get input values
+            const totalCapitalCall = parseFloat(document.getElementById('totalCapitalCall').value);
+            const ownershipPercentage = parseFloat(document.getElementById('ownershipPercentage').value);
+
+            // Calculate LP's capital call
+            const lpCapitalCall = (totalCapitalCall * ownershipPercentage) / 100;
+
+            // Format the result
+            const formattedAmount = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(lpCapitalCall);
+
+            const formattedTotal = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(totalCapitalCall);
+
+            // Display the result
+            document.getElementById('resultAmount').textContent = formattedAmount;
+            document.getElementById('resultDetails').innerHTML = `
+                <strong>Calculation:</strong><br>
+                Total Capital Call: ${formattedTotal}<br>
+                LP Ownership: ${ownershipPercentage}%<br>
+                LP Capital Call: ${formattedTotal} × ${ownershipPercentage}% = ${formattedAmount}
+            `;
+
+            document.getElementById('result').classList.add('show');
+        });
+
+        // Allow only numbers and decimal points in number inputs
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                const char = String.fromCharCode(e.which);
+                if (!/[\d.]/.test(char)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
