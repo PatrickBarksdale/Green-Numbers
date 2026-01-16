@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { isSupabaseConfigured } from "@/lib/supabaseClient";
 
 export default function Home() {
   const [totalCapitalCall, setTotalCapitalCall] = useState<string>("");
@@ -50,6 +51,12 @@ export default function Home() {
           <p className="text-gray-600 text-sm">
             Calculate LP contributions based on ownership percentage
           </p>
+
+          {/* Supabase Connection Check */}
+          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+            <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured() ? 'bg-green-500' : 'bg-red-500'}`}></span>
+            Supabase env: {isSupabaseConfigured() ? 'OK' : 'MISSING'}
+          </div>
         </div>
 
         {/* Form */}
