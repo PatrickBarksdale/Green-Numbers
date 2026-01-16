@@ -11,6 +11,8 @@ export default function Home() {
   const [password, setPassword] = useState<string>("");
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>("");
+  const [authSuccess, setAuthSuccess] = useState<string>("");
+  const [isSignupMode, setIsSignupMode] = useState<boolean>(false);
 
   // Calculator state
   const [totalCapitalCall, setTotalCapitalCall] = useState<string>("");
@@ -68,6 +70,14 @@ export default function Home() {
     e.preventDefault();
     setAuthLoading(true);
     setAuthError("");
+    setAuthSuccess("");
+
+    // Validate password length
+    if (password.length < 8) {
+      setAuthError("Password must be at least 8 characters long");
+      setAuthLoading(false);
+      return;
+    }
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -80,6 +90,42 @@ export default function Home() {
       } else {
         setEmail("");
         setPassword("");
+      }
+    } catch (error) {
+      setAuthError("An unexpected error occurred");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignup = async (e: FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+
+    // Validate password length
+    if (password.length < 8) {
+      setAuthError("Password must be at least 8 characters long");
+      setAuthLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setAuthSuccess(
+          "Account created! Check your email to confirm (if confirmations are enabled). Then log in."
+        );
+        setEmail("");
+        setPassword("");
+        setIsSignupMode(false);
       }
     } catch (error) {
       setAuthError("An unexpected error occurred");
@@ -139,47 +185,94 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              // Login form
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-500 transition-colors"
-                  />
+              // Login/Signup form
+              <div className="space-y-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {isSignupMode ? "Create Account" : "Login"}
+                  </h3>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-500 transition-colors"
-                  />
-                </div>
-                {authError && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{authError}</p>
-                  </div>
-                )}
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg font-semibold text-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+
+                <form
+                  onSubmit={isSignupMode ? handleSignup : handleLogin}
+                  className="space-y-4"
                 >
-                  {authLoading ? "Logging in..." : "Login"}
-                </button>
-              </form>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      Password {isSignupMode && "(min. 8 characters)"}
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={8}
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+
+                  {/* Error Message */}
+                  {authError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600">{authError}</p>
+                    </div>
+                  )}
+
+                  {/* Success Message */}
+                  {authSuccess && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-600">{authSuccess}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg font-semibold text-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      {authLoading
+                        ? isSignupMode
+                          ? "Creating account..."
+                          : "Logging in..."
+                        : isSignupMode
+                        ? "Create account"
+                        : "Login"}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Toggle between Login and Signup */}
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSignupMode(!isSignupMode);
+                      setAuthError("");
+                      setAuthSuccess("");
+                    }}
+                    className="text-sm text-purple-600 hover:text-purple-800 font-medium transition-colors"
+                  >
+                    {isSignupMode
+                      ? "Already have an account? Log in"
+                      : "Need an account? Create one"}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
